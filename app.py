@@ -29,7 +29,7 @@ app.layout = html.Div(
     id="big-app-container",
     children=[
         html.Div([
-           html.Div(children='''請選擇對象'''),  
+           html.Div(children='''請選擇對象''', className="section-banner"),  
            dcc.Dropdown(
                id='user_type',
                options=[
@@ -43,7 +43,7 @@ app.layout = html.Div(
         ),
 
        html.Div([
-           html.Div(children='''請選擇時間區間'''),  
+           html.Div(children='''請選擇時間區間''', className="section-banner"),  
            dcc.Dropdown(
                id='time_range',
                options=[
@@ -77,7 +77,7 @@ app.layout = html.Div(
        html.Br(),
 
        html.Div([
-           html.Div(children='''不同裝置的瀏覽次數'''),  
+           html.Div(children='''不同裝置的瀏覽次數''', className="section-banner"),  
            dcc.Graph(           
                id="piechart_device",
               )
@@ -86,7 +86,7 @@ app.layout = html.Div(
           ),
 
        html.Div([
-           html.Div(children='''不同時段的瀏覽次數'''),  
+           html.Div(children='''不同時段的瀏覽次數''', className="section-banner"),  
            dcc.Graph(           
                id="barchart_time",
               )
@@ -97,7 +97,7 @@ app.layout = html.Div(
        html.Br(),
 
        html.Div([
-           html.Div(children='''不同網站的瀏覽次數'''),  
+           html.Div(children='''不同網站的瀏覽次數''', className="section-banner"),  
            dcc.Graph(           
                id="barchart_site",
               )
@@ -106,7 +106,7 @@ app.layout = html.Div(
           ),
 
        html.Div([
-           html.Div(children='''不同來源的瀏覽次數'''),  
+           html.Div(children='''不同來源的瀏覽次數''', className="section-banner"),  
            dcc.Graph(           
                id="piechart_refer",
               )
