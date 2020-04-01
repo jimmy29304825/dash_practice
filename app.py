@@ -7,6 +7,7 @@ import pandas as pd
 import dash_daq as daq
 import datetime
 import plotly.express as px
+import dash_table
 
 # external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 # app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
@@ -16,6 +17,32 @@ app = dash.Dash(__name__)
 
 df = pd.read_csv('./matomo.csv')
 df.visitDate = pd.to_datetime(df.visitDate)
+
+df_sum = df.groupby(['visitDate']).sum().reset_index()[[
+                 'visitDate', 
+                 'itemMessage',
+                 'itemPhoneGo',
+                 'itemSearch',
+                 'itemSearchFollow',
+                 'itemView',
+                 'itemViewFollow',
+                 'communitySaerch',
+                 'communityView',
+                 'communityViewFollow',
+                 'sell',
+                 'evertrust',
+                 'evertrustFollow',
+                 'newsView',
+                 'newsFollow',
+                 'tvView',
+                 'tvFollow',
+]]
+df_sum = df_sum.melt(id_vars=["visitDate"], 
+                     var_name="function", 
+                     value_name="count")
+df_sum = df_sum.sort_values(by=['visitDate', 'count'], ascending=False)
+df_sum.visitDate = pd.to_datetime(df_sum.visitDate)
+
 user_type={'member': 'member',
            'userid': 'userid',
            'all': 'all',
@@ -27,11 +54,11 @@ date={
     '365': 3,
 }
 
-
 app.layout = html.Div(
     id="big-app-container",
     children=[
         html.H1(children='''Matomo Dashboard''', className="section-banner"),  
+        html.H2(children='''ver 1.0''', className="section-banner", style = {'text-align':'right',}),  
         html.Br(),
         html.Div([
            html.H2(children='''Target''', className="section-banner"),  
@@ -107,16 +134,54 @@ app.layout = html.Div(
           ],
            style={'width': '50%', 'display': 'inline-block'}
           ),
-
-       html.Div([
+     
+     html.Div([
            html.H2(children='''Referer Source''', className="section-banner"),  
            dcc.Graph(           
                id="piechart_refer",
               )
           ],
            style={'width': '50%', 'display': 'inline-block'}
-          ),    
-   ])
+          ),
+     
+     html.Br(),
+      html.Br(),
+     
+     html.Div([
+      html.H2(children='''Function Usage Rank''', className="section-banner"),  
+      dash_table.DataTable(
+       id='table',
+       columns=[{"name": i, "id": i} for i in ['function', 'count', 'percent']],
+       style_cell_conditional=[
+        {
+         'if': {'column_id': 'function'},
+         'textAlign': 'center',
+        }
+       ],
+#        style_as_list_view=True,
+       style_header={'backgroundColor': '#323540', 'textAlign': 'center',},
+       style_cell={
+        'backgroundColor': '#525769',
+        'color': 'white',
+        "font-size": 20,
+       },
+       
+      )],
+           style={'width': '50%', 'display': 'inline-block'},
+     ), 
+     
+     html.Div([
+           html.H2(children='''Ads clicks''', className="section-banner"),  
+           dcc.Graph(           
+               id="piechart_ad",
+              )
+          ],
+           style={'width': '50%', 'display': 'inline-block'}
+          ),
+          html.Br(),
+          html.Br(),
+          html.Br(),
+    ])
 
 # 總瀏覽會員數
 @app.callback(
@@ -173,6 +238,7 @@ def device_pie(user_type, time_range):
                     "labels": ['App', 'Desktop', 'MobilePhone'],
                     "values": data,
                     "type": "pie",
+                    "hole": .3,
                     "marker": {"colors": px.colors.sequential.Cividis, "line": {"color": "white", "width": 0.5}},
                     "hoverinfo": "label+percent+value",
                     "textinfo": "label+percent",
@@ -282,6 +348,7 @@ def time_bar(user_type, time_range):
             'data': [
              {'x': ['YC', 'HF'], 
               'y': data, 
+#               "orientation": 'h',
               'type': 'bar', 
               'name': 'member', 
               'text': data, 
@@ -304,6 +371,54 @@ def time_bar(user_type, time_range):
             }
         }
 
+   # 不同網站的流量
+@app.callback(
+    Output('table', 'data'),
+    [Input('user_type', 'value'),
+     Input('time_range', 'value')])
+def function_table(user_type, time_range):
+    time_range = date[time_range]
+    df_sum.visitDate = pd.to_datetime(df_sum.visitDate)
+    dff_sum = df_sum[df_sum.visitDate >= df_sum.visitDate.max() - datetime.timedelta(days=time_range)]
+    dff_sum =dff_sum.groupby(['function']).sum()
+    dff_sum['percent'] = (dff_sum['count'] /  dff_sum['count'].sum() * 100).round(decimals=2)
+    dff_sum['percent'] = pd.Series(["{0:.2f}%".format(val) for val in dff_sum['percent']], index = dff_sum.index)
+    dff_sum = dff_sum.sort_values(by=['count'], ascending=False)
+    dff_sum = dff_sum.reset_index()
+    return dff_sum.to_dict('records')
+
+   
+# 不同裝置使用比例
+@app.callback(
+    Output('piechart_ad', 'figure'),
+    [Input('user_type', 'value'),
+     Input('time_range', 'value')])
+def device_pie(user_type, time_range):
+    time_range = date[time_range]
+    dff = df[df.visitDate >= df.visitDate.max() - datetime.timedelta(days=time_range)]
+    data = [dff['adsShow'].sum() - dff['adsClick'].sum(), dff['adsClick'].sum()]
+    return {
+            "data": [
+                {
+                    "labels": ['no click', 'click'],
+                    "values": data,
+                    "type": "pie",
+                    'cliponaxis': False,
+                    "marker": {"colors": px.colors.sequential.Cividis, "line": {"color": "white", "width": 0.5}},
+                    "hoverinfo": "label+percent+value",
+                    "textinfo": "label+percent",
+                }
+            ],
+            "layout": {
+                "margin": dict(l=10, r=10, t=60, b=10),
+                "showlegend": False,
+                "paper_bgcolor": "rgba(0,0,0,0)",
+                "plot_bgcolor": "rgba(0,0,0,0)",
+                "font": {"color": "white", 'size': 15, 'family': "Microsoft JhengHei"},
+                "autosize": True,
+                
+            },
+        }
    
    
 if __name__ == '__main__':
