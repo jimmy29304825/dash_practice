@@ -57,43 +57,46 @@ date={
 app.layout = html.Div(
     id="big-app-container",
     children=[
+     
         html.H1(children='''Matomo Dashboard''', className="section-banner"),  
         html.H2(children='''ver 1.0''', className="section-banner", style = {'text-align':'right',}),  
+     
         html.Br(),
+     
         html.Div([
-           html.H2(children='''Target''', className="section-banner"),  
-           dcc.Dropdown(
-               id='user_type',
-               options=[
-                   {'label': 'Members', 'value': 'member'},
-                   {'label': 'Non-Members', 'value': 'userid'},
-                   {'label': 'All', 'value': 'all'}
-               ],
-               value='member',
-           )],
-           style={'width': '50%', 'display': 'inline-block'}
+            html.H2(children='''Target''', className="section-banner"),  
+            dcc.Dropdown(
+                id='user_type',
+                options=[
+                    {'label': 'Members', 'value': 'member'},
+                    {'label': 'Non-Members', 'value': 'userid'},
+                    {'label': 'All', 'value': 'all'}
+                ],
+                value='member',
+            )],
+            style={'width': '50%', 'display': 'inline-block'}
         ),
-
-       html.Div([
-           html.H2(children='''Times''', className="section-banner"),  
-           dcc.Dropdown(
-               id='time_range',
-               options=[
-                   {'label': 'Yesterday', 'value': '1'},
-                   {'label': 'Last 3 Month', 'value': '90'},
+        
+        html.Div([
+            html.H2(children='''Times''', className="section-banner"),  
+            dcc.Dropdown(
+                id='time_range',
+                options=[
+                    {'label': 'Yesterday', 'value': '1'},
+                    {'label': 'Last 3 Month', 'value': '90'},
                    {'label': 'Last Halt Year', 'value': '180'},
-                   {'label': 'Last 1 Year', 'value': '365'}
-               ],
-               value='1',
-           )],
-           style={'width': '50%', 'display': 'inline-block'}
-       ),
-
+                    {'label': 'Last 1 Year', 'value': '365'}
+                ],
+                value='1',
+            )],
+            style={'width': '50%', 'display': 'inline-block'}
+        ),
+        
        html.Br(),
-
-       html.Div(
-           id="quick-stats",
-           className="row",
+        
+        html.Div(
+            id="quick-stats",
+            className="row",
            children=[
                html.Div(
                    id="card_1",
@@ -102,86 +105,86 @@ app.layout = html.Div(
                    id="card_2",
                ),
            ],
-       ),
-
-       html.Br(),
-
-       html.Div([
-           html.H2(children='''Devices''', className="section-banner"),  
-           dcc.Graph(           
-               id="piechart_device",
-              )
-          ],
-           style={'width': '50%', 'display': 'inline-block'}
-          ),
-
-       html.Div([
-           html.H2(children='''Time Period''', className="section-banner"),  
-           dcc.Graph(           
-               id="barchart_time",
-              )
-          ],
-           style={'width': '50%', 'display': 'inline-block'}
-          ),
-
-       html.Br(),
-
-       html.Div([
-           html.H2(children='''Visit's Site''', className="section-banner"),  
-           dcc.Graph(           
-               id="barchart_site",
-              )
-          ],
-           style={'width': '50%', 'display': 'inline-block'}
-          ),
-     
-     html.Div([
-           html.H2(children='''Referer Source''', className="section-banner"),  
-           dcc.Graph(           
-               id="piechart_refer",
-              )
-          ],
-           style={'width': '50%', 'display': 'inline-block'}
-          ),
-     
-     html.Br(),
-      html.Br(),
-     
-     html.Div([
-      html.H2(children='''Function Usage Rank''', className="section-banner"),  
-      dash_table.DataTable(
-       id='table',
-       columns=[{"name": i, "id": i} for i in ['function', 'count', 'percent']],
-       style_cell_conditional=[
-        {
-         'if': {'column_id': 'function'},
-         'textAlign': 'center',
-        }
-       ],
-#        style_as_list_view=True,
-       style_header={'backgroundColor': '#323540', 'textAlign': 'center',},
-       style_cell={
-        'backgroundColor': '#525769',
-        'color': 'white',
-        "font-size": 20,
-       },
-       
-      )],
-           style={'width': '50%', 'display': 'inline-block'},
-     ), 
-     
-     html.Div([
-           html.H2(children='''Ads clicks''', className="section-banner"),  
-           dcc.Graph(           
-               id="piechart_ad",
-              )
-          ],
-           style={'width': '50%', 'display': 'inline-block'}
-          ),
-          html.Br(),
-          html.Br(),
-          html.Br(),
+        ),
+        
+        html.Br(),
+        
+        html.Div([
+            html.H2(children='''Devices''', className="section-banner"),  
+            dcc.Graph(           
+                id="piechart_device",
+            )
+        ],
+            style={'width': '50%', 'display': 'inline-block'}
+        ),
+        
+        html.Div([
+            html.H2(children='''Time Period''', className="section-banner"),  
+            dcc.Graph(           
+                id="barchart_time",
+            )
+        ],
+            style={'width': '50%', 'display': 'inline-block'}
+        ),
+        
+        html.Br(),
+        
+        html.Div([
+            html.H2(children='''Visit's Site''', className="section-banner"),  
+            dcc.Graph(           
+                id="barchart_site",
+            )
+        ],
+            style={'width': '50%', 'display': 'inline-block'}
+        ),
+        
+        html.Div([
+            html.H2(children='''Referer Source''', className="section-banner"),  
+            dcc.Graph(           
+                id="piechart_refer",
+            )
+        ],
+            style={'width': '50%', 'display': 'inline-block'}
+        ),
+        
+        html.Br(),
+        
+        html.Div([
+            html.H2(children='''Function Usage Rank''', className="section-banner"),  
+            dash_table.DataTable(
+                id='table',
+                columns=[{"name": i, "id": i} for i in ['function', 'count', 'percent']],
+                style_cell_conditional=[
+                    {
+                        'if': {'column_id': 'function'},
+                        'textAlign': 'center',
+                    }
+                ],
+#                 style_as_list_view=True,
+                style_header={'backgroundColor': '#323540', 'textAlign': 'center',},
+                style_cell={
+                    'backgroundColor': '#525769',
+                    'color': 'white',
+                    "font-size": 20,
+                },
+                
+            )],
+            style={'width': '50%', 'display': 'inline-block'},
+        ), 
+        
+        html.Div([
+            html.H2(children='''Ads clicks''', className="section-banner"),  
+            dcc.Graph(           
+                id="piechart_ad",
+            )
+        ],
+            style={'width': '50%', 'display': 'inline-block'}
+        ),
+        html.Br(),
+        html.Br(),
+        html.Br(),
     ])
+
 
 # 總瀏覽會員數
 @app.callback(
