@@ -6,10 +6,13 @@ from datetime import datetime as dt
 import pandas as pd
 import dash_daq as daq
 import datetime
+import plotly.express as px
 
-external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
+# external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
+# app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
-app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
+app = dash.Dash(__name__)
+
 
 df = pd.read_csv('./matomo.csv')
 df.visitDate = pd.to_datetime(df.visitDate)
@@ -28,31 +31,33 @@ date={
 app.layout = html.Div(
     id="big-app-container",
     children=[
+        html.H1(children='''Matomo Dashboard''', className="section-banner"),  
+        html.Br(),
         html.Div([
-           html.Div(children='''請選擇對象''', className="section-banner"),  
+           html.H2(children='''Target''', className="section-banner"),  
            dcc.Dropdown(
                id='user_type',
                options=[
-                   {'label': '會員', 'value': 'member'},
-                   {'label': '非會員', 'value': 'userid'},
-                   {'label': '全部', 'value': 'all'}
+                   {'label': 'Members', 'value': 'member'},
+                   {'label': 'Non-Members', 'value': 'userid'},
+                   {'label': 'All', 'value': 'all'}
                ],
-               value='member'
+               value='member',
            )],
            style={'width': '50%', 'display': 'inline-block'}
         ),
 
        html.Div([
-           html.Div(children='''請選擇時間區間''', className="section-banner"),  
+           html.H2(children='''Times''', className="section-banner"),  
            dcc.Dropdown(
                id='time_range',
                options=[
-                   {'label': '前一天', 'value': '1'},
-                   {'label': '近三個月', 'value': '90'},
-                   {'label': '近半年', 'value': '180'},
-                   {'label': '近一年', 'value': '365'}
+                   {'label': 'Yesterday', 'value': '1'},
+                   {'label': 'Last 3 Month', 'value': '90'},
+                   {'label': 'Last Halt Year', 'value': '180'},
+                   {'label': 'Last 1 Year', 'value': '365'}
                ],
-               value='1'
+               value='1',
            )],
            style={'width': '50%', 'display': 'inline-block'}
        ),
@@ -65,11 +70,9 @@ app.layout = html.Div(
            children=[
                html.Div(
                    id="card_1",
-#                    style={'width': '50%', 'display': 'inline-block'}
                ),
                html.Div(
                    id="card_2",
-#                    style={'width': '50%', 'display': 'inline-block'}
                ),
            ],
        ),
@@ -77,7 +80,7 @@ app.layout = html.Div(
        html.Br(),
 
        html.Div([
-           html.Div(children='''不同裝置的瀏覽次數''', className="section-banner"),  
+           html.H2(children='''Devices''', className="section-banner"),  
            dcc.Graph(           
                id="piechart_device",
               )
@@ -86,7 +89,7 @@ app.layout = html.Div(
           ),
 
        html.Div([
-           html.Div(children='''不同時段的瀏覽次數''', className="section-banner"),  
+           html.H2(children='''Time Period''', className="section-banner"),  
            dcc.Graph(           
                id="barchart_time",
               )
@@ -97,7 +100,7 @@ app.layout = html.Div(
        html.Br(),
 
        html.Div([
-           html.Div(children='''不同網站的瀏覽次數''', className="section-banner"),  
+           html.H2(children='''Visit's Site''', className="section-banner"),  
            dcc.Graph(           
                id="barchart_site",
               )
@@ -106,7 +109,7 @@ app.layout = html.Div(
           ),
 
        html.Div([
-           html.Div(children='''不同來源的瀏覽次數''', className="section-banner"),  
+           html.H2(children='''Referer Source''', className="section-banner"),  
            dcc.Graph(           
                id="piechart_refer",
               )
@@ -125,13 +128,13 @@ def mamber_visit(user_type, time_range):
     dff = df[df.visitDate >= df.visitDate.max() - datetime.timedelta(days=time_range)]
     member_visit = str(len(dff))
     return [
-                    html.P("造訪會員數"),
+                    html.H2("Users"),
                     daq.LEDDisplay(
                         id="operator-led",
                         value=member_visit,
-                        color="#92e0d3",
-                        backgroundColor="#1e2130",
-                        size=30,
+                        color="#ffffff",
+                        backgroundColor="#2b4780",
+                        size=50,
                     ),
                 ]
    
@@ -145,13 +148,13 @@ def visit_sum(user_type, time_range):
     dff = df[df.visitDate >= df.visitDate.max() - datetime.timedelta(days=time_range)]
     visit_times= str(dff.visit_times.sum())
     return [
-                    html.P("會員總造訪次數"),
+                    html.H2("Visits"),
                     daq.LEDDisplay(
                         id="operator-led",
                         value=visit_times,
-                        color="#92e0d3",
-                        backgroundColor="#1e2130",
-                        size=30,
+                        color="#ffffff",
+                        backgroundColor="#2b4780",
+                        size=50,
                     ),
                 ]
 
@@ -170,7 +173,7 @@ def device_pie(user_type, time_range):
                     "labels": ['App', 'Desktop', 'MobilePhone'],
                     "values": data,
                     "type": "pie",
-                    "marker": {"line": {"color": "white", "width": 0.5}},
+                    "marker": {"colors": px.colors.sequential.Cividis, "line": {"color": "white", "width": 0.5}},
                     "hoverinfo": "label+percent+value",
                     "textinfo": "label+percent",
                 }
@@ -180,7 +183,7 @@ def device_pie(user_type, time_range):
                 "showlegend": False,
                 "paper_bgcolor": "rgba(0,0,0,0)",
                 "plot_bgcolor": "rgba(0,0,0,0)",
-                "font": {"color": "white", 'size': 15},
+                "font": {"color": "white", 'size': 15, 'family': "Microsoft JhengHei"},
                 "autosize": True,
             },
         }
@@ -194,10 +197,25 @@ def device_pie(user_type, time_range):
 def time_bar(user_type, time_range):
     time_range = date[time_range]
     dff = df[df.visitDate >= df.visitDate.max() - datetime.timedelta(days=time_range)]
-    data = [dff['before_work'].sum(), dff['work_morning'].sum(), dff['work_evening'].sum(), dff['after_work'].sum(), dff['midnight'].sum()]
+    data = [
+     format(dff['before_work'].sum(), ",d"),  
+     format(dff['work_morning'].sum(), ",d"), 
+     format(dff['work_evening'].sum(), ",d"), 
+     format(dff['after_work'].sum(), ",d"), 
+     format(dff['midnight'].sum(), ",d"), 
+    ]
     return {
             'data': [
-                {'x': ['上班前', '上午', '下午', '下班後', '凌晨'], 'y': data, 'type': 'bar', 'name': 'member', 'text': data, 'textposition': 'outside'},
+             {'x': ['Before Work', 'Working Morning', 'Working Evening', 'After Work', 'Midnight'],
+              'y': data, 
+              'type': 'bar',
+              'name': 'member',
+              'text': data, 
+              'textposition': 'outside', 
+              'cliponaxis': False,
+              'marker': {'color':px.colors.sequential.Cividis, "line": {"color": "white", "width": 1}},
+             },
+             
             ],
             'layout': {
              "paper_bgcolor": "rgba(0,0,0,0)",
@@ -209,7 +227,7 @@ def time_bar(user_type, time_range):
               showgrid=False, showline=False, zeroline=False
              ),
              "autosize": True,
-             "font":{"color": "pink", "size": 15},
+             "font":{"color": "white", "size": 15, 'family': "Microsoft JhengHei"},
             }
         }
 
@@ -232,7 +250,7 @@ def device_pie(user_type, time_range):
                     "labels": ['direct', 'SearchEngine', 'OtherWeb', 'Campiagn'],
                     "values": data,
                     "type": "pie",
-                    "marker": {"line": {"color": "white", "width": 0.5}},
+                    "marker": {"colors": px.colors.sequential.Cividis, "line": {"color": "white", "width": 0.5}},
                     "hoverinfo": "label+percent+value",
                     "textinfo": "label+percent",
                 }
@@ -242,7 +260,7 @@ def device_pie(user_type, time_range):
                 "showlegend": False,
                 "paper_bgcolor": "rgba(0,0,0,0)",
                 "plot_bgcolor": "rgba(0,0,0,0)",
-                "font": {"color": "white", 'size': 15},
+                "font": {"color": "white", 'size': 15, 'family': "Microsoft JhengHei"},
                 "autosize": True,
             },
         }
@@ -256,10 +274,21 @@ def device_pie(user_type, time_range):
 def time_bar(user_type, time_range):
     time_range = date[time_range]
     dff = df[df.visitDate >= df.visitDate.max() - datetime.timedelta(days=time_range)]
-    data = [dff['visit_YC'].sum(), dff['visit_HF'].sum(), ]
+    data = [
+     format(dff['visit_YC'].sum(), ",d"), 
+     format(dff['visit_HF'].sum(), ",d"), 
+    ]
     return {
             'data': [
-                {'x': ['永慶', '好房'], 'y': data, 'type': 'bar', 'name': 'member', 'text': data, 'textposition': 'outside'},
+             {'x': ['YC', 'HF'], 
+              'y': data, 
+              'type': 'bar', 
+              'name': 'member', 
+              'text': data, 
+              'textposition': 'outside', 
+              'cliponaxis': False,
+              'marker': {'color':px.colors.sequential.Cividis, "line": {"color": "white", "width": 1}},
+             },
             ],
             'layout': {
              "paper_bgcolor": "rgba(0,0,0,0)",
@@ -271,7 +300,7 @@ def time_bar(user_type, time_range):
               showgrid=False, showline=False, zeroline=False
              ),
              "autosize": True,
-             "font":{"color": "pink", "size": 15},
+             "font":{"color": "white", "size": 15, 'family': "Microsoft JhengHei"},
             }
         }
 
