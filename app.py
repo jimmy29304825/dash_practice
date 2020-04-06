@@ -8,12 +8,17 @@ import dash_daq as daq
 import datetime
 import plotly.express as px
 import dash_table
-
-# external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
-# app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
+import numpy as np
 
 app = dash.Dash(__name__)
+themeColor =  px.colors.diverging.RdYlBu[1:-1]
+themeColor.reverse()
 
+ddf = px.data.gapminder().query("year == 1952")
+fig = px.sunburst(ddf, path=['continent', 'country'], values='pop',
+                  color='lifeExp', hover_data=['iso_alpha'],
+                  color_continuous_scale='RdBu',
+                  color_continuous_midpoint=np.average(ddf['lifeExp'], weights=ddf['pop']))
 
 df = pd.read_csv('./matomo.csv')
 df.visitDate = pd.to_datetime(df.visitDate)
@@ -59,22 +64,23 @@ app.layout = html.Div(
     children=[
      
         html.H1(children='''Matomo Dashboard''', className="section-banner"),  
-        html.H2(children='''ver 1.0''', className="section-banner", style = {'text-align':'right',}),  
+        html.Div(children='''ver 1.0''', className="section-banner", style = {'text-align':'right',}),  
      
         html.Br(),
      
         html.Div([
             html.H2(children='''Target''', className="section-banner"),  
-            dcc.Dropdown(
-                id='user_type',
-                options=[
-                    {'label': 'Members', 'value': 'member'},
-                    {'label': 'Non-Members', 'value': 'userid'},
-                    {'label': 'All', 'value': 'all'}
-                ],
-                value='member',
+            dcc.RadioItems(
+                           id='user_type',
+                           options=[
+                            {'label': 'Member', 'value': 'Member'},
+                            {'label': 'not Member', 'value': 'notMember'},
+                            {'label': 'All', 'value': 'All'}
+                           ],
+             value='Member',
+             labelStyle={'display': 'inline-block'}
             )],
-            style={'width': '50%', 'display': 'inline-block'}
+            style={'width': '50%', 'text-align':'center', 'font-size':30}
         ),
         
         html.Div([
@@ -82,9 +88,9 @@ app.layout = html.Div(
             dcc.Dropdown(
                 id='time_range',
                 options=[
-                    {'label': 'Yesterday', 'value': '1'},
-                    {'label': 'Last 3 Month', 'value': '90'},
-                   {'label': 'Last Halt Year', 'value': '180'},
+                    {'label': '2020/2/23', 'value': '1'},
+                    {'label': '2020/2/23-2020/2/22', 'value': '90'},
+                   {'label': '2020/2/23-2020/2/21', 'value': '180'},
                     {'label': 'Last 1 Year', 'value': '365'}
                 ],
                 value='1',
@@ -92,7 +98,8 @@ app.layout = html.Div(
             style={'width': '50%', 'display': 'inline-block'}
         ),
         
-       html.Br(),
+        html.Br(),
+        html.Br(),
         
         html.Div(
             id="quick-stats",
@@ -107,6 +114,7 @@ app.layout = html.Div(
            ],
         ),
         
+        html.Br(),
         html.Br(),
         
         html.Div([
@@ -128,6 +136,7 @@ app.layout = html.Div(
         ),
         
         html.Br(),
+        html.Br(),
         
         html.Div([
             html.H2(children='''Visit's Site''', className="section-banner"),  
@@ -148,7 +157,8 @@ app.layout = html.Div(
         ),
         
         html.Br(),
-        
+        html.Br(),
+     
         html.Div([
             html.H2(children='''Function Usage Rank''', className="section-banner"),  
             dash_table.DataTable(
@@ -161,10 +171,10 @@ app.layout = html.Div(
                     }
                 ],
 #                 style_as_list_view=True,
-                style_header={'backgroundColor': '#323540', 'textAlign': 'center',},
+                style_header={'backgroundColor': '#92bcd6', 'textAlign': 'center',"font-size": 25,},
                 style_cell={
-                    'backgroundColor': '#525769',
-                    'color': 'white',
+                    'backgroundColor': '#c6e4f7',
+                    'color': '#424242',
                     "font-size": 20,
                 },
                 
@@ -183,6 +193,12 @@ app.layout = html.Div(
         html.Br(),
         html.Br(),
         html.Br(),
+     
+        html.Div([
+         html.H2(children='''sunburst sample''', className="section-banner"),  
+         dcc.Graph(figure=fig)
+        ],
+            style={'width': '50%', 'display': 'inline-block'})
     ])
 
 
@@ -196,12 +212,12 @@ def mamber_visit(user_type, time_range):
     dff = df[df.visitDate >= df.visitDate.max() - datetime.timedelta(days=time_range)]
     member_visit = str(len(dff))
     return [
-                    html.H2("Users"),
+                    html.H2("Unique Visits"),
                     daq.LEDDisplay(
                         id="operator-led",
                         value=member_visit,
-                        color="#ffffff",
-                        backgroundColor="#2b4780",
+                        color="#000000",
+                        backgroundColor="#daf3f5",
                         size=50,
                     ),
                 ]
@@ -220,8 +236,8 @@ def visit_sum(user_type, time_range):
                     daq.LEDDisplay(
                         id="operator-led",
                         value=visit_times,
-                        color="#ffffff",
-                        backgroundColor="#2b4780",
+                        color="#000000",
+                        backgroundColor="#daf3f5",
                         size=50,
                     ),
                 ]
@@ -242,7 +258,7 @@ def device_pie(user_type, time_range):
                     "values": data,
                     "type": "pie",
                     "hole": .3,
-                    "marker": {"colors": px.colors.sequential.Cividis, "line": {"color": "white", "width": 0.5}},
+                    "marker": {"colors": themeColor, "line": {"color": "white", "width": 0.5}},
                     "hoverinfo": "label+percent+value",
                     "textinfo": "label+percent",
                 }
@@ -252,7 +268,7 @@ def device_pie(user_type, time_range):
                 "showlegend": False,
                 "paper_bgcolor": "rgba(0,0,0,0)",
                 "plot_bgcolor": "rgba(0,0,0,0)",
-                "font": {"color": "white", 'size': 15, 'family': "Microsoft JhengHei"},
+                "font": {"color": "black", 'size': 15, 'family': "Microsoft JhengHei"},
                 "autosize": True,
             },
         }
@@ -282,7 +298,7 @@ def time_bar(user_type, time_range):
               'text': data, 
               'textposition': 'outside', 
               'cliponaxis': False,
-              'marker': {'color':px.colors.sequential.Cividis, "line": {"color": "white", "width": 1}},
+              'marker': {'color':themeColor, "line": {"color": "white", "width": 1}},
              },
              
             ],
@@ -296,7 +312,7 @@ def time_bar(user_type, time_range):
               showgrid=False, showline=False, zeroline=False
              ),
              "autosize": True,
-             "font":{"color": "white", "size": 15, 'family': "Microsoft JhengHei"},
+             "font":{"color": "black", "size": 15, 'family': "Microsoft JhengHei"},
             }
         }
 
@@ -319,7 +335,7 @@ def device_pie(user_type, time_range):
                     "labels": ['direct', 'SearchEngine', 'OtherWeb', 'Campiagn'],
                     "values": data,
                     "type": "pie",
-                    "marker": {"colors": px.colors.sequential.Cividis, "line": {"color": "white", "width": 0.5}},
+                    "marker": {"colors": themeColor, "line": {"color": "white", "width": 0.5}},
                     "hoverinfo": "label+percent+value",
                     "textinfo": "label+percent",
                 }
@@ -329,7 +345,7 @@ def device_pie(user_type, time_range):
                 "showlegend": False,
                 "paper_bgcolor": "rgba(0,0,0,0)",
                 "plot_bgcolor": "rgba(0,0,0,0)",
-                "font": {"color": "white", 'size': 15, 'family': "Microsoft JhengHei"},
+                "font": {"color": "black", 'size': 15, 'family': "Microsoft JhengHei"},
                 "autosize": True,
             },
         }
@@ -351,13 +367,13 @@ def time_bar(user_type, time_range):
             'data': [
              {'x': ['YC', 'HF'], 
               'y': data, 
-#               "orientation": 'h',
+#               "orientation": 'h',  #  X/Y軸互換
               'type': 'bar', 
               'name': 'member', 
               'text': data, 
               'textposition': 'outside', 
               'cliponaxis': False,
-              'marker': {'color':px.colors.sequential.Cividis, "line": {"color": "white", "width": 1}},
+              'marker': {'color':themeColor, "line": {"color": "white", "width": 1}},
              },
             ],
             'layout': {
@@ -370,7 +386,7 @@ def time_bar(user_type, time_range):
               showgrid=False, showline=False, zeroline=False
              ),
              "autosize": True,
-             "font":{"color": "white", "size": 15, 'family': "Microsoft JhengHei"},
+             "font":{"color": "black", "size": 15, 'family': "Microsoft JhengHei"},
             }
         }
 
@@ -407,7 +423,7 @@ def device_pie(user_type, time_range):
                     "values": data,
                     "type": "pie",
                     'cliponaxis': False,
-                    "marker": {"colors": px.colors.sequential.Cividis, "line": {"color": "white", "width": 0.5}},
+                    "marker": {"colors": themeColor, "line": {"color": "white", "width": 0.5}},
                     "hoverinfo": "label+percent+value",
                     "textinfo": "label+percent",
                 }
@@ -417,7 +433,7 @@ def device_pie(user_type, time_range):
                 "showlegend": False,
                 "paper_bgcolor": "rgba(0,0,0,0)",
                 "plot_bgcolor": "rgba(0,0,0,0)",
-                "font": {"color": "white", 'size': 15, 'family': "Microsoft JhengHei"},
+                "font": {"color": "black", 'size': 15, 'family': "Microsoft JhengHei"},
                 "autosize": True,
                 
             },
@@ -425,4 +441,4 @@ def device_pie(user_type, time_range):
    
    
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run_server(host='0.0.0.0', debug=True)
